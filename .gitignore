@@ -1,0 +1,14 @@
+build/
+cmake-build-*/
+
+.vs/
+*.sln
+*.vcxproj*
+*.user
+*.suo
+
+*.exe
+*.obj
+*.o
+*.dll
+*.lib
