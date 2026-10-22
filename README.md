@@ -1,5 +1,4 @@
 # CinemaBookings
-# CinemaBookings
 
 ## Giới thiệu
 CinemaBookings là dự án nhóm xây dựng ứng dụng đặt vé xem phim bằng C++ theo phương pháp lập trình hướng đối tượng (OOP).
