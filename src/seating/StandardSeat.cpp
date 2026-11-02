@@ -1,19 +1,18 @@
-#include "cinema/seating/StandardSeat.h"
-
-#include <stdexcept>
-
+#include <cinema/seating/StandardSeat.h>
 namespace cinema {
 
-StandardSeat::StandardSeat(const SeatId& id, const Money&) : Seat(id) {
-    throw std::logic_error("not implemented");
+    StandardSeat::StandardSeat(const SeatId& id, const Money& standardPrice)
+        : Seat(id), price_(standardPrice) {
+    }
+
+    SeatType StandardSeat::type() const { return SeatType::Standard; }
+
+    Money StandardSeat::price() const { return price_; }
+
+    int StandardSeat::capacity() const { return 1; }
+
+    std::string StandardSeat::describe() const {
+        return id().toString() + " [" + toString(type()) + "] " + price().toString();
+    }
+
 }
-
-SeatType StandardSeat::type() const { throw std::logic_error("not implemented"); }
-
-Money StandardSeat::price() const { throw std::logic_error("not implemented"); }
-
-int StandardSeat::capacity() const { throw std::logic_error("not implemented"); }
-
-std::string StandardSeat::describe() const { throw std::logic_error("not implemented"); }
-
-}  // namespace cinema
