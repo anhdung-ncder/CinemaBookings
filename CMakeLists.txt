@@ -1,4 +1,3 @@
-
 cmake_minimum_required(VERSION 3.20)
 
 project(CinemaBookings LANGUAGES CXX)
@@ -24,19 +23,19 @@ file(GLOB_RECURSE CORE_SOURCES CONFIGURE_DEPENDS
     "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
 )
 
-add_executable(CinemaBookings
-    src/app/main.cpp
-)
+# 2. Loại trừ main.cpp ra khỏi thư viện core (để không bị trùng hàm main)
+list(FILTER CORE_SOURCES EXCLUDE REGEX ".*/src/app/main\\.cpp$")
+
+# 3. Tạo thư viện tĩnh cinema_core
+add_library(cinema_core STATIC ${CORE_SOURCES})
+
+target_include_directories(cinema_core PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
-target_include_directories(CinemaBookings PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/include
-    ${CMAKE_CURRENT_SOURCE_DIR}
-)
-target_include_directories(CinemaBookings PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/include
-    ${CMAKE_CURRENT_SOURCE_DIR}
-)
+# 4. Chương trình chính
+add_executable(cinema_app src/app/main.cpp)
+target_link_libraries(cinema_app PRIVATE cinema_core)
 
-# Tạo thêm alias cinema_app để bạn A gõ tên nào cũng chạy được
-add_executable(cinema_app ALIAS CinemaBookings)
+# Tạo thêm alias CinemaBookings để các bạn gõ tên nào cũng chạy được
+add_executable(CinemaBookings ALIAS cinema_app)
