@@ -1,5 +1,5 @@
 #include "cinema/booking/WalletPayment.h"
-#include <stdexcept>
+#include "cinema/booking/BookingErrors.h"
 
 namespace cinema {
 
@@ -8,14 +8,17 @@ namespace cinema {
     std::string WalletPayment::code() const { return "WALLET"; }
     std::string WalletPayment::name() const { return "E-wallet"; }
 
-    Money WalletPayment::feeFor(const Money&) const {
-        throw std::logic_error("WalletPayment::feeFor chua lam");
+    Money WalletPayment::feeFor(const Money&) const { return Money(0); }
+
+    void WalletPayment::charge(const Money& total) {
+        if (balance_ < total) {                                          // kiểm tra TRƯỚC khi trừ
+            throw PaymentFailedError("Wallet balance is not enough");
+        }
+        balance_ -= total;
     }
-    void WalletPayment::charge(const Money&) {
-        throw std::logic_error("WalletPayment::charge chua lam");
-    }
-    void WalletPayment::refund(const Money&) {
-        throw std::logic_error("WalletPayment::refund chua lam");
+
+    void WalletPayment::refund(const Money& total) {
+        balance_ += total;
     }
 
     Money WalletPayment::balance() const { return balance_; }

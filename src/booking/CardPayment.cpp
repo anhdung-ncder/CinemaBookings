@@ -1,5 +1,5 @@
 #include "cinema/booking/CardPayment.h"
-#include <stdexcept>
+#include "cinema/booking/BookingErrors.h"
 
 namespace cinema {
 
@@ -8,14 +8,16 @@ namespace cinema {
     std::string CardPayment::code() const { return "CARD"; }
     std::string CardPayment::name() const { return "Credit card"; }
 
-    Money CardPayment::feeFor(const Money&) const {
-        throw std::logic_error("CardPayment::feeFor chua lam");
+    Money CardPayment::feeFor(const Money& amount) const {
+        return amount.scaledPercent(2);                                  // phí 2% trên tiền hàng
     }
-    void CardPayment::charge(const Money&) {
-        throw std::logic_error("CardPayment::charge chua lam");
+
+    void CardPayment::charge(const Money& total) {
+        if (total > limit_) {                                            
+            throw PaymentFailedError("Amount exceeds card limit");
+        }
     }
-    void CardPayment::refund(const Money&) {
-        throw std::logic_error("CardPayment::refund chua lam");
-    }
+
+    void CardPayment::refund(const Money&) {}
 
 }  
