@@ -37,5 +37,26 @@ target_include_directories(cinema_core PUBLIC
 add_executable(cinema_app src/app/main.cpp)
 target_link_libraries(cinema_app PRIVATE cinema_core)
 
-# Tạo thêm alias CinemaBookings để bạn A gõ tên nào cũng chạy được
+# Tạo thêm alias CinemaBookings để các bạn gõ tên nào cũng chạy được
 add_executable(CinemaBookings ALIAS cinema_app)
+
+# 5. Cấu hình kiểm thử (tự động nhận khi các bạn tạo file test trong tests/)
+enable_testing()
+
+if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_seating.cpp")
+    add_executable(test_seating tests/test_seating.cpp)
+    target_link_libraries(test_seating PRIVATE cinema_core)
+    add_test(NAME test_seating COMMAND test_seating)
+endif()
+
+if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_booking.cpp")
+    add_executable(test_booking tests/test_booking.cpp)
+    target_link_libraries(test_booking PRIVATE cinema_core)
+    add_test(NAME test_booking COMMAND test_booking)
+endif()
+
+if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_e2e.cpp")
+    add_executable(test_e2e tests/test_e2e.cpp)
+    target_link_libraries(test_e2e PRIVATE cinema_core)
+    add_test(NAME test_e2e COMMAND test_e2e)
+endif()
