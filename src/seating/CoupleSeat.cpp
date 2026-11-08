@@ -1,19 +1,23 @@
 #include "cinema/seating/CoupleSeat.h"
 
-#include <stdexcept>
-
 namespace cinema {
 
-CoupleSeat::CoupleSeat(const SeatId& id, const Money&) : Seat(id) {
-    throw std::logic_error("not implemented");
-}
+    namespace {
+        constexpr int kCouplePercent = 180;  // gia ghe doi = 180% gia chuan (cho ca 2 nguoi)
+    }  // namespace
 
-SeatType CoupleSeat::type() const { throw std::logic_error("not implemented"); }
+    CoupleSeat::CoupleSeat(const SeatId& id, const Money& standardPrice)
+        : Seat(id), price_(standardPrice.scaledPercent(kCouplePercent)) {
+    }
 
-Money CoupleSeat::price() const { throw std::logic_error("not implemented"); }
+    SeatType CoupleSeat::type() const { return SeatType::Couple; }
 
-int CoupleSeat::capacity() const { throw std::logic_error("not implemented"); }
+    Money CoupleSeat::price() const { return price_; }
 
-std::string CoupleSeat::describe() const { throw std::logic_error("not implemented"); }
+    int CoupleSeat::capacity() const { return 2; }
 
-}  // namespace cinema
+    std::string CoupleSeat::describe() const {
+        return id().toString() + " [" + toString(type()) + "] " + price().toString();
+    }
+
+}  
