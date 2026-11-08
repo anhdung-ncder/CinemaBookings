@@ -1,5 +1,5 @@
 #include "cinema/booking/CashPayment.h"
-#include <stdexcept>
+#include "cinema/booking/BookingErrors.h"
 
 namespace cinema {
 
@@ -8,14 +8,14 @@ namespace cinema {
     std::string CashPayment::code() const { return "CASH"; }
     std::string CashPayment::name() const { return "Cash"; }
 
-    Money CashPayment::feeFor(const Money&) const {
-        throw std::logic_error("CashPayment::feeFor chua lam");
+    Money CashPayment::feeFor(const Money&) const { return Money(0); }   // tiền mặt không có phí
+
+    void CashPayment::charge(const Money& total) {
+        if (tendered_ < total) {                                         
+            throw PaymentFailedError("Cash tendered is less than total");
+        }
     }
-    void CashPayment::charge(const Money&) {
-        throw std::logic_error("CashPayment::charge chua lam");
-    }
-    void CashPayment::refund(const Money&) {
-        throw std::logic_error("CashPayment::refund chua lam");
-    }
+
+    void CashPayment::refund(const Money&) {}                            
 
 }  
