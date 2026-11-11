@@ -1,0 +1,3 @@
+showtimeId,movieId,roomId,startDateTime,status
+S1,M1,R1,2026-12-01 18:00,OPEN
+S2,M1,R1,2026-12-01 21:00,CLOSED
