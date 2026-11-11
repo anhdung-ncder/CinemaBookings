@@ -2,8 +2,6 @@
 #include <sstream>
 #include <vector>
 #include <cstdio>
-#include <filesystem>
-#include <system_error>
 
 #include "cinema/app/DataStore.h"
 #include "cinema/catalog/CatalogErrors.h"
@@ -27,6 +25,17 @@ namespace cinema {
 		}
 		return tokens;
 	}
+
+	static long long parseStrictLL(const std::string& s) {
+		if (s.empty()) throw std::invalid_argument("Gia tri so bi rong");
+		std::size_t pos = 0;
+		long long val = std::stoll(s, &pos);
+		if (pos != s.size()) {
+			throw std::invalid_argument("Gia tri khong phai so nguyen hop le: " + s);
+		}
+		return val;
+	}
+
 	DataStore::DataStore(std::string dataDir) : dataDir_(std::move(dataDir)) {
 		if (!dataDir_.empty() && dataDir_.back() != '/' && dataDir_.back() != '\\') {
 			dataDir_ += "/";
@@ -53,7 +62,7 @@ namespace cinema {
 			}
 
 			try {
-				int duration = std::stoi(cols[2]);
+				int duration = static_cast<int>(parseStrictLL(cols[2]));
 				auto movie = std::make_shared<const Movie>(cols[0], cols[1], duration, cols[3]);
 				cinema.addMovie(movie);
 			}
@@ -81,7 +90,7 @@ namespace cinema {
 				throw FileError(filePath + ":" + std::to_string(lineNum) + ": Sai so luong cot");
 			}
 			try {
-				Money price(std::stoll(cols[2]));
+				Money price(parseStrictLL(cols[2]));
 				auto room = Room::fromLayout(cols[0], cols[1], price, cols[3]);
 				cinema.addRoom(room);
 			}
@@ -165,7 +174,7 @@ namespace cinema {
 					}
 					seatIds.push_back(SeatId::parse(s));
 				}
-				Money total(std::stoll(cols[4]));
+				Money total(parseStrictLL(cols[4]));
 
 				BookingStatus status = BookingStatus::Confirmed;
 				if (cols[6] == "CONFIRMED") {
