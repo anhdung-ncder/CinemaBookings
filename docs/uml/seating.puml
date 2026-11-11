@@ -1,0 +1,181 @@
+@startuml seating
+title Goi A - Ghe va trang thai dat cho (namespace cinema)
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+hide empty members
+
+package "cinema::common" {
+  class SeatId <<value type>> {
+    - row_ : char
+    - number_ : int
+    + SeatId(row : char, number : int)
+    + {static} parse(text : string) : SeatId
+    + row() : char
+    + number() : int
+    + toString() : string
+  }
+  class Money <<goi B>>
+  class CinemaError <<goi C>>
+}
+
+package "cinema::seating" {
+  enum SeatType {
+    Standard
+    Vip
+    Couple
+  }
+
+  enum SeatState {
+    Available
+    Held
+    Sold
+  }
+
+  abstract class Seat {
+    - id_ : SeatId
+    # Seat(id : SeatId)
+    + virtual ~Seat()
+    + id() : const SeatId&
+    + {abstract} type() : SeatType
+    + {abstract} price() : Money
+    + {abstract} capacity() : int
+    + {abstract} describe() : string
+  }
+
+  class StandardSeat {
+    - price_ : Money
+    + StandardSeat(id : const SeatId&, standardPrice : const Money&)
+    + type() : SeatType
+    + price() : Money
+    + capacity() : int
+    + describe() : string
+  }
+
+  class VipSeat {
+    - price_ : Money
+    + VipSeat(id : const SeatId&, standardPrice : const Money&)
+    + type() : SeatType
+    + price() : Money
+    + capacity() : int
+    + describe() : string
+  }
+
+  class CoupleSeat {
+    - price_ : Money
+    + CoupleSeat(id : const SeatId&, standardPrice : const Money&)
+    + type() : SeatType
+    + price() : Money
+    + capacity() : int
+    + describe() : string
+  }
+
+  class SeatFactory <<factory>> {
+    + {static} create(typeCode : char, id : const SeatId&, standardPrice : const Money&) : unique_ptr<Seat>
+  }
+
+  class Room {
+    - id_ : string
+    - name_ : string
+    - seats_ : map<SeatId, unique_ptr<Seat>>
+    + Room(id : string, name : string)
+    + {static} fromLayout(id : const string&, name : const string&, standardPrice : const Money&, layout : const string&) : shared_ptr<Room>
+    + addSeat(seat : unique_ptr<Seat>) : void
+    + id() : const string&
+    + name() : const string&
+    + hasSeat(id : const SeatId&) : bool
+    + seat(id : const SeatId&) : const Seat&
+    + seats() : vector<const Seat *>
+    + seatCount() : size_t
+  }
+
+  class SeatMap {
+    - room_ : shared_ptr<const Room>
+    - states_ : map<SeatId, SeatState>
+    + SeatMap(room : shared_ptr<const Room>)
+    + room() : const Room&
+    + stateOf(id : const SeatId&) : SeatState
+    + seatsInState(state : SeatState) : vector<SeatId>
+    + count(state : SeatState) : size_t
+    + quote(ids : const vector<SeatId>&) : Money
+    + hold(ids : const vector<SeatId>&) : void
+    + confirm(ids : const vector<SeatId>&) : void
+    + release(ids : const vector<SeatId>&) : void
+    + restoreSold(ids : const vector<SeatId>&) : void
+  }
+
+  class SeatTakenError {
+    - seatId_ : SeatId
+    + SeatTakenError(seatId : const SeatId&)
+    + seatId() : const SeatId&
+  }
+  class SeatNotFoundError {
+    + SeatNotFoundError(message : const string&)
+  }
+  class InvalidSeatStateError {
+    + InvalidSeatStateError(message : const string&)
+  }
+  class InvalidLayoutError {
+    + InvalidLayoutError(message : const string&)
+  }
+}
+
+' ---- Ke thua (IS-A) ----
+Seat <|-- StandardSeat
+Seat <|-- VipSeat
+Seat <|-- CoupleSeat
+CinemaError <|-- SeatTakenError
+CinemaError <|-- SeatNotFoundError
+CinemaError <|-- InvalidSeatStateError
+CinemaError <|-- InvalidLayoutError
+
+' ---- So huu va su dung (HAS-A, USES-A) ----
+Seat *-- "1" SeatId : id_
+Room "1" *-- "0..*" Seat : seats_\n(unique_ptr, so huu duy nhat)
+SeatMap --> "1" Room : room_\n(shared_ptr<const Room>)
+SeatMap --> SeatState : states_
+Seat ..> SeatType
+Seat ..> Money : price()
+SeatTakenError *-- "1" SeatId : seatId_
+
+SeatFactory ..> StandardSeat : <<create>>
+SeatFactory ..> VipSeat : <<create>>
+SeatFactory ..> CoupleSeat : <<create>>
+Room ..> SeatFactory : fromLayout dung
+
+SeatMap ..> SeatTakenError : <<throws>>
+SeatMap ..> InvalidSeatStateError : <<throws>>
+SeatMap ..> SeatNotFoundError : <<throws>>
+Room ..> InvalidLayoutError : <<throws>>
+SeatFactory ..> InvalidLayoutError : <<throws>>
+SeatId ..> SeatNotFoundError : <<throws>>
+
+note right of SeatId
+  Ham tu do cung namespace:
+  operator==, !=, <, <<
+  (A2 < A10 < B1)
+end note
+
+note bottom of Seat
+  Chi mo ta ghe VAT LY.
+  Trang thai dat cho nam o SeatMap
+  (moi suat chieu mot SeatMap).
+  Copy bi cam (= delete) de tranh slicing.
+end note
+
+note bottom of SeatFactory
+  'S' -> StandardSeat (100%)
+  'V' -> VipSeat (150%)
+  'C' -> CoupleSeat (180%, capacity 2)
+  Ma khac -> InvalidLayoutError
+end note
+
+note bottom of SeatMap
+  hold / confirm / release / restoreSold
+  la ALL-OR-NOTHING: kiem tra het roi moi ghi.
+end note
+
+note bottom of SeatType
+  Ham tu do: toCode(SeatType) -> char,
+  toString(SeatType), toString(SeatState)
+end note
+@enduml
