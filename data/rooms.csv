@@ -1,2 +1,3 @@
 roomId,name,standardPrice,layout
 R1,Room 1,80000,SSSSSS|SSSSSS|VVVVVV|CCC
+R2,Room 2,100000,SSS|VVV|CC
