@@ -95,3 +95,65 @@ cmake --build build --config Debug
 # 4. Chạy chương trình
 .\build\cinema_app.exe
 ```
+
+---
+
+## 🧪 Hướng Dẫn Chạy Kiểm Thử (Tests)
+
+Dự án sử dụng micro-framework tự viết [`tests/check.h`](tests/check.h) (không dùng thư viện ngoài) và tự động cấu hình qua CTest:
+
+### Cách 1: Trong Visual Studio 2022
+Ở ô **Select Startup Item** trên thanh công cụ, chọn target muốn chạy rồi bấm **Ctrl + F5**:
+* `test_seating.exe` — Kiểm thử Gói A (`SeatId`, đa hình 3 loại ghế, `Room`, `SeatMap`).
+* `test_e2e.exe` — Kiểm thử tích hợp toàn hệ thống theo **12 kịch bản E1–E12**.
+
+### Cách 2: Bằng dòng lệnh (Terminal / PowerShell)
+
+```powershell
+# Chạy toàn bộ test qua CTest
+ctest --test-dir build --output-on-failure
+
+# Hoặc chạy từng file test trực tiếp
+.\build\test_seating.exe
+.\build\test_e2e.exe
+```
+
+*(Lưu ý: Với bộ test `test_book_flow.cpp` của Gói B, biên dịch lẻ bằng `g++ -std=c++17 -Wall -Wextra -Iinclude tests/test_book_flow.cpp -Lbuild -lcinema_core -o build/test_book_flow.exe` rồi chạy `.\build\test_book_flow.exe`.)*
+
+---
+
+## 📁 Dữ Liệu Mẫu (`data/`)
+
+Khi khởi động, `cinema_app` tự động tìm và nạp 4 file CSV (UTF-8, không dấu ngoặc kép) từ thư mục `data/`:
+* `movies.csv`: Phim `M1` (*Space Odyssey*, 120 phút, SciFi).
+* `rooms.csv`: Phòng `R1` (21 ghế: `A1–A6`, `B1–B6` Standard `80,000`; `C1–C6` VIP `120,000`; `D1–D3` Couple `144,000`) và phòng `R2`.
+* `showtimes.csv`: Suất `S1` (`2026-12-01 18:00`, `OPEN`) và `S2` (`2026-12-01 21:00`, `CLOSED`).
+* `bookings.csv`: Chỉ chứa dòng tiêu đề ban đầu để phục vụ chạy kịch bản demo từ `BK0001`.
+
+---
+
+## 🎬 Kịch Bản Demo Trực Tiếp (8–12 Phút)
+
+Chạy `cinema_app.exe` và thao tác lần lượt theo đúng các bước sau:
+
+| Bước | Chức năng | Thao tác nhập trên Console | Kết quả kỳ vọng (Chứng minh OOP) |
+|---|---|---|---|
+| **1** | **Xem lịch & Ghế** | Chọn `1` $\rightarrow$ Nhập `S1` | Hiện suất `S1 (OPEN)` và sơ đồ 21 ghế (`[S]`, `[V]`, `[C]`). |
+| **2** | **Đặt vé `CASH` (Standard)** | Chọn `2` $\rightarrow$ `S1` $\rightarrow$ `A1 A2` $\rightarrow$ `An` $\rightarrow$ `CASH` $\rightarrow$ `Enter` | Thành công `BK0001`, tổng **`160,000 VND`**, in 2 vé `BK0001-A1`, `BK0001-A2`. |
+| **3** | **Đa hình Ghế VIP + `CARD`** | Chọn `2` $\rightarrow$ `S1` $\rightarrow$ `C1 C2` $\rightarrow$ `Chi` $\rightarrow$ `CARD` $\rightarrow$ `Enter` | Thành công `BK0002`, giá VIP 150% (`240,000`) + phí 2% (`4,800`) = **`244,800 VND`**. |
+| **4** | **Đa hình Ghế Couple** | Chọn `2` $\rightarrow$ `S1` $\rightarrow$ `D1` $\rightarrow$ `Dung` $\rightarrow$ `CASH` $\rightarrow$ `Enter` | Thành công `BK0003`, giá Couple 180% (`capacity = 2`) = **`144,000 VND`**. |
+| **5** | **Chứng minh Exception** | Chọn `2` $\rightarrow$ `S1` $\rightarrow$ `A2 A3` $\rightarrow$ `Binh` $\rightarrow$ `CASH` $\rightarrow$ `Enter` | Báo `[Loi ghe da ban]` (`SeatTakenError` ở `A2`), xem lại `S1` thấy **`A3` vẫn trống** (*All-or-Nothing*). |
+| **6** | **Chứng minh Rollback** | Chọn `2` $\rightarrow$ `S1` $\rightarrow$ `C3` $\rightarrow$ `Binh` $\rightarrow$ `WALLET` $\rightarrow$ `100000` | Báo `[Loi thanh toan]` (`PaymentFailedError`, thiếu tiền), xem lại `S1` thấy **`C3` được trả về trống** (không kẹt `Held`). |
+| **7** | **Hủy vé & Hoàn tiền** | Chọn `3` $\rightarrow$ `BK0001` (rồi thử chọn `3` $\rightarrow$ `BK0001` lần nữa) | Lần 1: Hoàn **`160,000 VND`**, `A1 A2` trống lại. Lần 2: Báo `[Loi dat ve]` (`BookingError`). |
+| **8** | **Báo cáo STL & Lambda** | Chọn `4` $\rightarrow$ `4` | Doanh thu phim `M1` (chỉ tính `Confirmed`) = **`388,800 VND`** (`244,800 + 144,000`). |
+| **9** | **Lưu & Nạp lại CSV** | Chọn `5` $\rightarrow$ `1` (Lưu) $\rightarrow$ `0` (Thoát) $\rightarrow$ Mở lại app | Tự nạp lại trạng thái đã lưu: ghế `C1, C2, D1` vẫn `[X]`, đặt mới ra **`BK0004`**. |
+
+---
+
+## 🔗 Trạng Thái Tích Hợp (Mục C8)
+
+| Thành viên / Gói | Nội dung đã đẩy lên `main` | Trạng thái Build & Kiểm thử |
+|---|---|---|
+| **Gói A (`seating/`)** | `SeatId`, `SeatErrors`, cây ghế đa hình (`Standard`/`Vip`/`Couple`), `SeatFactory`, `Room`, `SeatMap`, `data/rooms.csv`, `docs/uml/seating.puml`, `tests/test_seating.cpp` | 🟢 Build sạch (`0 warnings`) — `test_seating` **All checks passed!** |
+| **Gói B (`booking/`)** | `Money`, `BookingErrors`, `IPayment` (`Cash`/`Card`/`Wallet`), `PaymentFactory`, `Ticket`, `Booking`, `BookingService` (`book` + rollback, `cancel`, `import/export`), `tests/test_book_flow.cpp` | 🟢 Build sạch (`0 warnings`) — `test_book_flow` **49/49 checks passed** |
+| **Gói C (`catalog/` + `app/`)** | `CMakeLists.txt`, `tests/check.h`, `CinemaError`, `DateTime`, `Movie`, `Showtime` (Facade), `Cinema`, `DataStore` + CSV mẫu, `Reports`, `Menu`, `main.cpp`, `tests/test_e2e.cpp` (E1–E12) | 🟢 Build sạch (`0 warnings`) — `test_e2e` **All checks passed!** (E1–E12 pass 100%) |
