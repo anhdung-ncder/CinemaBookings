@@ -52,9 +52,9 @@ namespace cinema {
 	}
 
 	void Menu::printSeatMap(const Showtime& showtime) {
-		std::cout << "\n--- SO DO GHE SUAT" << showtime.id()
-			<< "(" << showtime.movie().title()
-			<< "-" << showtime.start().toString() << ") ---\n";
+		std::cout << "\n--- SO DO GHE SUAT " << showtime.id()
+			<< " (" << showtime.movie().title()
+			<< " - " << showtime.start().toString() << ") ---\n";
 		std::cout << "Trang thai: " << (showtime.isOpen() ? "OPEN" : "CLOSED") << "\n";
 		std::cout << "Chu thich: [S/V/C]=Trong   [H]=Dang giu   [X]=Da ban\n\n";
 
@@ -65,7 +65,7 @@ namespace cinema {
 			}
 			if (s->id().row() != currentRow) {
 				currentRow = s->id().row();
-				std::cout << "Hang" << currentRow << ": ";
+				std::cout << "Hang " << currentRow << ": ";
 			}
 			SeatState st = showtime.seatMap().stateOf(s->id());
 			std::string mark;
@@ -78,7 +78,7 @@ namespace cinema {
 			else {
 				mark = "X";
 			}
-			std::cout << s->id().toString() << "[" << mark << "]";
+			std::cout << s->id().toString() << "[" << mark << "] ";
 		}
 		std::cout << "\n\n";
 	}
@@ -95,7 +95,7 @@ namespace cinema {
 			std::cout << "0. Thoat chuong trinh\n";
 			std::cout << "=====================================================\n";
 
-			int choice = readInt("Chon chuc nang:");
+			int choice = readInt("Chon chuc nang: ");
 			if (choice == 0) {
 				std::cout << "Tam biet\n";
 				break;
@@ -116,13 +116,13 @@ namespace cinema {
 				}
 			}
 			catch (const SeatTakenError& e) {
-				std::cout << "[Loi ghe da ban]" << e.what() << "\n";
+				std::cout << "[Loi ghe da ban] " << e.what() << "\n";
 			}
 			catch (const ShowtimeClosedError& e) {
-				std::cout << "[Loi suat da dong]" << e.what() << "\n";
+				std::cout << "[Loi suat da dong] " << e.what() << "\n";
 			}
 			catch (const PaymentFailedError& e) {
-				std::cout << "[Loi thanh toan]" << e.what() << "\n";
+				std::cout << "[Loi thanh toan] " << e.what() << "\n";
 			}
 			catch (const BookingError& e) {
 				std::cout << "[Loi dat ve] " << e.what() << "\n";
@@ -195,8 +195,9 @@ namespace cinema {
 
 		std::cout << "\n>>> DAT VE THANH CONG! <<<\n";
 		std::cout << "Ma don: " << booking->id() << "\n";
-		std::cout << "Khach hang" << booking->customer() << "\n";
-		std::cout << "Tong tien (da gom phi)" << booking->total().toString() << "\n";
+		std::cout << "Khach hang: " << booking->customer() << "\n";
+		std::cout << "Thanh toan: " << booking->paymentCode() << "\n";
+		std::cout << "Tong tien (da gom phi): " << booking->total().toString() << "\n";
 		std::cout << "Danh sach ve:\n";
 		for (const auto& t : booking->tickets()) {
 			std::cout << " -" << t.ticketId()
@@ -260,7 +261,7 @@ namespace cinema {
 			auto res = Reports::bookingsByCustomer(service_, cust);
 			std::cout << "Tim thay " << res.size() << " don:\n";
 			for (const auto& b : res) {
-				std::cout << "  - " << b->id() << " | Suat" << b->showtime().id()
+				std::cout << "  - " << b->id() << " | Suat: " << b->showtime().id()
 					<< " | " << b->total().toString()
 					<< " | " << toString(b->status()) << "\n";
 			}
@@ -274,10 +275,10 @@ namespace cinema {
 		std::cout << "\n--- LUU / NAP FILE CSV (" << store_.dataDir() << ") ---\n";
 		std::cout << "1. Luu du lieu hien tai ra file CSV\n";
 		std::cout << "2. Nap lai du lieu tu file CSV\n";
-		int sub = readInt("Chon ");
+		int sub = readInt("Chon: ");
 		if (sub == 1) {
 			store_.save(cinema_, service_);
-			std::cout << ">>> Nap du lieu thanh cong!\n";
+			std::cout << ">>> Luu du lieu thanh cong!\n";
 		}
 		else if (sub == 2) {
 			store_.load(cinema_, service_);
@@ -297,7 +298,7 @@ namespace cinema {
 		}
 		else {
 			st->open();
-			std::cout << "Da mo suat chieu" << st->id() << ".\n";
+			std::cout << "Da MO suat chieu " << st->id() << ".\n";
 		}
 	}
 
